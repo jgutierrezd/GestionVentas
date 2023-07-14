@@ -1,6 +1,7 @@
-using ApiGestionVentas.Data;
+﻿using ApiGestionVentas.Data;
 using ApiGestionVentas.ViewModel;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -35,13 +36,23 @@ builder.Services.AddAuthentication(options =>
 // Add services Authorization to container.
 builder.Services.AddAuthorization();
 
+// Add services Swagger
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 // Map access token
-app.MapPost("/token",  async (User user) =>
+app.MapPost("/token", async (User user) =>
 {
     if (user.UserName == "Admin" && user.Password == "123456")
     {
@@ -75,10 +86,147 @@ app.MapPost("/token",  async (User user) =>
 });
 
 
-app.MapGet("/", () => "Hello World!");
+app.MapGet("/", () => "");
 
-app.MapGet("/products", async (GestionVentasDbContext db) =>
- await db.Producto.ToListAsync()
-).RequireAuthorization();
 
+// Productos
+/////////////////////////////////////////////////////////////
+app.MapGet("/products", async (GestionVentasDbContext dbContext) =>
+{
+    var items = await dbContext.Producto.ToListAsync();
+    if (items == null)
+    {
+        return Results.NoContent();
+    }
+    return Results.Ok(items);
+
+}).RequireAuthorization();
+
+app.MapGet("/products/{id}", async (int id, GestionVentasDbContext dbContext) =>
+{
+    var itemModel = await dbContext.Producto.FindAsync(id);
+    if (itemModel == null)
+    {
+        return Results.NotFound();
+    }
+    return Results.Ok(itemModel);
+}).RequireAuthorization();
+
+
+//Asesores
+/////////////////////////////////////////////////////////////
+app.MapGet("/advisors", async (GestionVentasDbContext dbContext) =>
+{
+    var items = await dbContext.Asesor.ToListAsync();
+    if (items == null)
+    {
+        return Results.NoContent();
+    }
+    return Results.Ok(items);
+
+}).RequireAuthorization();
+
+app.MapGet("/advisors/{id}", async (int id, GestionVentasDbContext dbContext) =>
+{
+    var itemModel = await dbContext.Asesor.FindAsync(id);
+    if (itemModel == null)
+    {
+        return Results.NotFound();
+    }
+    return Results.Ok(itemModel);
+
+}).RequireAuthorization();
+
+//Clientes
+/////////////////////////////////////////////////////////////
+app.MapGet("/customers", async (GestionVentasDbContext dbContext) =>
+{
+    var items = await dbContext.Cliente.ToListAsync();
+    if (items == null)
+    {
+        return Results.NoContent();
+    }
+    return Results.Ok(items);
+
+}).RequireAuthorization();
+
+app.MapGet("/customers/{id}", async (int id, GestionVentasDbContext dbContext) =>
+{
+    var itemModel = await dbContext.Cliente.FindAsync(id);
+    if (itemModel == null)
+    {
+        return Results.NotFound();
+    }
+    return Results.Ok(itemModel);
+
+}).RequireAuthorization();
+
+app.MapPost("/customers", async ([FromBody] Cliente item, GestionVentasDbContext dbContext) =>
+{
+    var itemModel = new ApiGestionVentas.Models.Cliente { TipoDoc = item.TipoDoc, NumDoc = item.NumDoc, Nombres = item.Nombres, Apellidos = item.Apellidos, Celular = item.Celular };
+
+    var result = dbContext.Cliente.Add(itemModel);
+
+    await dbContext.SaveChangesAsync();
+
+    return Results.Ok(result.Entity);
+
+}).RequireAuthorization();
+
+app.MapPut("/customers", async (int id, Cliente item, GestionVentasDbContext dbContext) =>
+{
+    var itemModel = await dbContext.Cliente.FindAsync(id);
+    if (itemModel == null)
+    {
+        return Results.NotFound();
+    }
+
+    itemModel.Nombres = item.Nombres;
+    itemModel.Apellidos = item.Apellidos;
+    itemModel.Celular = item.Celular;
+
+    await dbContext.SaveChangesAsync();
+
+    return Results.Ok(itemModel);
+
+}).RequireAuthorization();
+
+
+//Ventas
+/////////////////////////////////////////////////////////////
+app.MapGet("/sales", async (GestionVentasDbContext dbContext) =>
+{
+    var items = await dbContext.Venta.ToListAsync();
+    if (items == null)
+    {
+        return Results.NoContent();
+    }
+    return Results.Ok(items);
+
+}).RequireAuthorization();
+
+app.MapGet("/sales/{id}", async (int id, GestionVentasDbContext dbContext) =>
+{
+    var itemModel = await dbContext.Venta.FindAsync(id);
+    if (itemModel == null)
+    {
+        return Results.NotFound();
+    }
+    return Results.Ok(itemModel);
+
+}).RequireAuthorization();
+
+app.MapPost("/sales", async ([FromBody] Venta item, GestionVentasDbContext dbContext) =>
+{
+    var itemModel = new ApiGestionVentas.Models.Venta { Periodo = item.Periodo, Monto = item.Monto, FechaOperacion = DateTime.Now };
+
+    var result = dbContext.Venta.Add(itemModel);
+
+    await dbContext.SaveChangesAsync();
+
+    return Results.Ok(result.Entity);
+
+}).RequireAuthorization();
+
+/////////////////////////////////////////////////////////////
 app.Run();

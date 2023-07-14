@@ -1,11 +1,7 @@
-﻿global using System.Text.Json.Serialization;
-
-namespace ApiGestionVentas.Models
+﻿namespace ApiGestionVentas.ViewModel
 {
     public class Cliente
     {
-        public int Id { get; set; }
-
         public string? TipoDoc { get; set; }
 
         public string? NumDoc { get; set; }
@@ -15,8 +11,5 @@ namespace ApiGestionVentas.Models
         public string? Apellidos { get; set; }
 
         public string? Celular { get; set; }
-
-        [JsonIgnore]
-        public ICollection<Venta> Ventas { get; set; }
     }
 }
