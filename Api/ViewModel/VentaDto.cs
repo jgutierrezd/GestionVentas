@@ -1,6 +1,6 @@
 ﻿namespace ApiGestionVentas.ViewModel
 {
-    public class Venta
+    public class VentaDto
     {
         public int Periodo { get; set; }
         public decimal Monto { get; set; }

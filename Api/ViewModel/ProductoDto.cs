@@ -1,6 +1,6 @@
 ﻿namespace ApiGestionVentas.ViewModel
 {
-    public class Producto
+    public class ProductoDto
     {
         public string? Tipo { get; set; }
 

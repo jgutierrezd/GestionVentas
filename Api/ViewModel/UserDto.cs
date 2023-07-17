@@ -1,6 +1,6 @@
 ﻿namespace ApiGestionVentas.ViewModel
 {
-    public class User
+    public class UserDto
     {
         public string UserName { get; set; }
 

@@ -1,6 +1,6 @@
 ﻿namespace ApiGestionVentas.ViewModel
 {
-    public class Cliente
+    public class ClienteDto
     {
         public string? TipoDoc { get; set; }
 
